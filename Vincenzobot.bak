@@ -1,0 +1,43 @@
+#!/bin/bash
+
+
+_get_repolink () {
+    local regex
+    regex='(https?)://github.com/.+/.+'
+    if [[ $VINCENZO_REPO == "hellbot" ]]
+    then
+        echo "https://github.com/XRAJVEER09OP/Plugins/archive/master.zip" | base64 -d
+    elif [[ $VINCENZO_REPO == "HELLBOT" ]]
+    then
+        echo "https://github.com/XRAJVEER09OP/Plugins/archive/master.zip" | base64 -d
+    elif [[ $VINCENZO_REPO =~ $regex ]]
+    then
+        if [[ $VINCENZO_REPO_BRANCH ]]
+        then
+            echo "${VINCENZO_REPO}/archive/${VINCENZO_REPO_BRANCH}.zip"
+        else
+            echo "${VINCENZO_REPO}/archive/master.zip"
+        fi
+    else
+        echo "https://github.com/XRAJVEER09OP/Plugins/archive/master.zip" | base64 -d
+    fi
+}
+
+
+_starter () {
+    local zippath
+    zippath="myvincenzobot.zip"
+    echo "••• DOWNLOADING VINCENZOBOT •••"
+    wget -q $(_get_repolink) -O "$zippath"
+    VINCENZO_PATH=$(zipinfo -1 "$zippath" | grep -v "/.");
+    unzip -qq "$zippath"
+    rm -rf "$zippath"
+    sleep 5
+    cd $VINCENZO_PATH
+    echo "••• STARTING VINCENZOBOT •••"
+
+    python3 ./setup/updater.py ./requirements.txt requirements.txt
+    python3 -m vincenzobot
+}
+
+_starter
